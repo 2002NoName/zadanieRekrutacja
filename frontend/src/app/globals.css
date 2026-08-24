@@ -81,7 +81,6 @@ h2 {
 	overflow: hidden;
 	border: 1px solid var(--line);
 	background: var(--panel);
-	box-shadow: 8px 8px 0 #dce6d7;
 }
 .table-toolbar {
 	display: flex;
@@ -283,9 +282,6 @@ td small {
 	.table-toolbar {
 		align-items: stretch;
 		flex-direction: column;
-	}
-	.product-table {
-		box-shadow: 5px 5px 0 #dce6d7;
 	}
 	.pagination {
 		font-size: 0.78rem;

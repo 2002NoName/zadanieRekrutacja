@@ -4,13 +4,13 @@ Navigation: [README](../README.md) | [Stack](stack.md) | [Security](security.md)
 
 ## Triggers
 
-The workflow in `.github/workflows/ci.yml` runs on pushes to `dev` and `main`, pull requests targeting `main`, GitHub Merge Queue `merge_group` events, and manual dispatches.
+The workflow in `.github/workflows/CI.yml` runs on pushes to `dev` and `main`, pull requests targeting `dev` or `main`, GitHub Merge Queue `merge_group` events, and manual dispatches.
 
-An ordinary push to `dev` runs the fast feedback path: build and lint for the frontend and backend. A pull request to `main`, a merge queue group, a push to `main`, or a manual dispatch runs the complete quality and security path.
+An ordinary push to `dev` runs the fast feedback path: build and lint for the frontend and backend. A pull request to `dev` or `main`, a merge queue group, a push to `main`, or a manual dispatch runs the complete quality and security path.
 
 ## Quality gate
 
-The `quality-gate` job runs independently for the frontend and backend on every workflow trigger:
+The `quality-gate` job runs the following checks for the frontend and then the backend on every workflow trigger:
 
 1. `npm ci` installs dependencies from each lockfile.
 2. `npm run lint` applies repository lint rules.
