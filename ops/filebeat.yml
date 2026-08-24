@@ -1,0 +1,27 @@
+filebeat.inputs:
+    - type: filestream
+      id: docker-container-logs
+      prospector.scanner.check_interval: 1s
+      paths: ["/var/lib/docker/containers/*/*-json.log"]
+      parsers:
+          - container:
+                format: docker
+      processors:
+          - add_docker_metadata:
+                host: unix:///var/run/docker.sock
+          - decode_json_fields:
+                fields: ["message"]
+                target: ""
+                overwrite_keys: true
+output.elasticsearch:
+    hosts: ["http://elasticsearch:9200"]
+    index: "crud-api-logs-%{+yyyy.MM.dd}"
+    pipeline: "crud-api-geoip"
+setup.ilm.enabled: false
+setup.template.type: index
+setup.template.name: crud-api-logs-index
+setup.template.pattern: crud-api-logs-*
+setup.template.overwrite: true
+setup.template.priority: 500
+setup.template.settings:
+    index.lifecycle.name: crud-api-retention

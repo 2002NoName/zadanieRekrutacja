@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# build outputs
+.next/
+out/
+build/
+dist/
+coverage/
+.turbo/
+
+# misc
+.DS_Store
+*.pem
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

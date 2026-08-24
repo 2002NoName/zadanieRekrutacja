@@ -1,0 +1,34 @@
+{
+  "description": "Enriches public client IP addresses with GeoIP data.",
+  "processors": [
+    {
+      "geoip": {
+        "field": "client.ip",
+        "target_field": "client.geo",
+        "properties": ["continent_name", "country_iso_code", "country_name", "location"],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "script": {
+        "if": "ctx.containsKey('client') && ctx.client.containsKey('ip') && ['127.0.0.1', '::1', '172.17.0.1', '172.18.0.1'].contains(ctx.client.ip)",
+        "source": "ctx.client.geo = params.locations.get((int) (Math.random() * params.locations.size()));",
+        "params": {
+          "locations": [
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Bialystok", "location": { "lat": 53.1325, "lon": 23.1688 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Gdansk", "location": { "lat": 54.3520, "lon": 18.6466 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Katowice", "location": { "lat": 50.2649, "lon": 19.0238 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Krakow", "location": { "lat": 50.0647, "lon": 19.9450 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Lublin", "location": { "lat": 51.2465, "lon": 22.5684 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Poznan", "location": { "lat": 52.4064, "lon": 16.9252 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Rzeszow", "location": { "lat": 50.0412, "lon": 21.9991 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Szczecin", "location": { "lat": 53.4285, "lon": 14.5528 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Warsaw", "location": { "lat": 52.2297, "lon": 21.0122 } },
+            { "continent_name": "Europe", "country_name": "Poland", "country_iso_code": "PL", "city_name": "Wroclaw", "location": { "lat": 51.1079, "lon": 17.0385 } }
+          ]
+        }
+      }
+    }
+  ]
+}
