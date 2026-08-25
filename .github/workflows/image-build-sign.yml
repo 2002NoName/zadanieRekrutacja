@@ -1,0 +1,41 @@
+name: Image Build and Sign
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    image-build-sign:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v5
+            - uses: docker/setup-buildx-action@v3
+            - uses: sigstore/cosign-installer@v3
+            - uses: docker/build-push-action@v6
+              with:
+                  context: ./backend
+                  tags: crud-api:${{ github.sha }}
+                  outputs: type=oci,dest=/tmp/crud-api.tar
+            - uses: docker/build-push-action@v6
+              with:
+                  context: ./frontend
+                  tags: crud-frontend:${{ github.sha }}
+                  outputs: type=oci,dest=/tmp/crud-frontend.tar
+            - run: cosign sign-blob --yes --bundle /tmp/crud-api.bundle /tmp/crud-api.tar
+            - run: cosign sign-blob --yes --bundle /tmp/crud-frontend.bundle /tmp/crud-frontend.tar
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: signed-container-images-${{ github.sha }}
+                  path: |
+                      /tmp/crud-api.tar
+                      /tmp/crud-api.bundle
+                      /tmp/crud-frontend.tar
+                      /tmp/crud-frontend.bundle
+                  retention-days: 14
