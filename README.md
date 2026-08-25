@@ -20,7 +20,7 @@ The application manages products with the following attributes:
 - price
 - stock level
 
-The API initializes 2,000 products in memory when the process starts. The web client provides server-side search and pagination, as well as create, edit, and delete workflows.
+The API initializes 10,000 products in memory when the process starts. The web client provides server-side search and pagination, as well as create, edit, and delete workflows.
 
 Data is process-local and is recreated after an API restart.
 
@@ -61,7 +61,7 @@ The REST API base URL is `http://localhost:4000`. The full endpoint contract, va
 
 ## CI/CD
 
-CI/CD runs as three focused workflows. [push-checks.yml](.github/workflows/push-checks.yml) builds, lints, and scans for secrets on every push to a branch other than `main`. [pr-checks.yml](.github/workflows/pr-checks.yml) runs dependency auditing and CodeQL analysis on pull requests targeting any branch other than `main` and on merge queue groups. [image-build-sign.yml](.github/workflows/image-build-sign.yml) builds and signs container image archives on every push to `main`.
+CI/CD runs as three focused workflows. [push-checks.yml](.github/workflows/push-checks.yml) builds, lints, and scans for secrets on every push to a branch other than `main`. [pr-checks.yml](.github/workflows/pr-checks.yml) runs dependency auditing and CodeQL analysis on pull requests targeting any branch, including `main`, and on merge queue groups. [image-build-sign.yml](.github/workflows/image-build-sign.yml) builds and signs container image archives on every push to `main`.
 
 Signed OCI image archives are attached to the `image-build-sign` workflow run; they are not published to a registry. See [docs/cicd.md](docs/cicd.md) for the full pipeline and required branch-protection status checks.
 

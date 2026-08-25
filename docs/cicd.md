@@ -6,13 +6,13 @@ Navigation: [README](../README.md) | [Stack](stack.md) | [Security](security.md)
 
 CI/CD is split into three independent workflows, each scoped to a single stage of the pipeline:
 
-| Workflow                                                            | Trigger                                                                       | Purpose                          |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------- |
-| [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                             | Build, lint, and secret scanning |
-| [`pr-checks.yml`](../.github/workflows/pr-checks.yml)               | Pull request targeting any branch except `main`, merge queue, manual dispatch | Dependency audit and CodeQL      |
-| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                               | Signed image archives            |
+| Workflow                                                            | Trigger                                                                                            | Purpose                          |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                                                  | Build, lint, and secret scanning |
+| [`pr-checks.yml`](../.github/workflows/pr-checks.yml)               | Pull request targeting any branch (including `main`), merge queue, push to `main`, manual dispatch | Dependency audit and CodeQL      |
+| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                                                    | Signed image archives            |
 
-`main` only receives already-checked commits through a pull request merged from `dev`, so it is intentionally excluded from `push-checks.yml` and `pr-checks.yml` and is instead covered by `image-build-sign.yml`.
+`main` only receives commits through a pull request from `dev`, which `pr-checks.yml` still gates. Direct pushes are excluded from `push-checks.yml` since `main` never receives them; the resulting push after merge is instead covered by `image-build-sign.yml`.
 
 ## Push checks
 
@@ -25,10 +25,12 @@ Configure `build-lint-check` and `secret-scan` as required branch-protection sta
 
 ## Pull request checks
 
-`pr-checks.yml` runs on pull requests targeting any branch other than `main`, and on merge queue groups:
+`pr-checks.yml` runs on pull requests targeting any branch, including `main`, on merge queue groups, and on pushes to `main`:
 
-1. `dependency-audit` runs `npm audit --audit-level=high` for the frontend and backend, rejecting high or critical vulnerabilities.
+1. `dependency-audit` runs `npm audit --audit-level=high` for the frontend and backend, rejecting high or critical vulnerabilities. It is skipped on the push-to-`main` trigger, since that code already passed audit during its pull request.
 2. `codeql` runs JavaScript/TypeScript analysis with no build capture and uploads results to GitHub Code Scanning.
+
+The push-to-`main` trigger exists solely so CodeQL analyzes the default branch and populates the repository's Security tab; without it, GitHub only has pull request-scoped results.
 
 Configure `dependency-audit` and `codeql` as required branch-protection status checks so a pull request cannot merge while either job fails.
 

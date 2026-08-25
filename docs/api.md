@@ -17,7 +17,7 @@ For local diagnostic exercises, mutation requests can include `X-Simulate-Failur
 Returns the process status and current catalog size.
 
 ```json
-{ "status": "ok", "records": 2000 }
+{ "status": "ok", "records": 10000 }
 ```
 
 Status: `200 OK`.
@@ -47,7 +47,7 @@ Example: `GET /api/products?page=1&limit=20&search=hardware`
 			"stock": 1
 		}
 	],
-	"meta": { "page": 1, "limit": 20, "total": 2000, "totalPages": 100 }
+	"meta": { "page": 1, "limit": 20, "total": 10000, "totalPages": 500 }
 }
 ```
 
