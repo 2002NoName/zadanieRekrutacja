@@ -40,4 +40,4 @@ Client IP addresses, User-Agent values, and server-side stack traces are operati
 
 Gitleaks scans the complete Git history for committed secrets. CodeQL analyzes JavaScript and TypeScript and publishes findings to GitHub Code Scanning. After these checks and the build checks pass on `main`, images are exported as OCI archives, signed with keyless Cosign/Sigstore signing, and uploaded with their bundles as workflow artifacts. Images are not published to GHCR by the current workflow. GitHub OIDC supplies the short-lived signing identity; no private signing key is stored in repository secrets.
 
-Branch protection should require `quality-gate`, `secret-scan`, and `codeql` before a pull request can be merged.
+Branch protection should require `build-lint-check`, `secret-scan`, and `codeql` before a pull request can be merged.

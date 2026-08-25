@@ -18,10 +18,10 @@ CI/CD is split into three independent workflows, each scoped to a single stage o
 
 `push-checks.yml` runs on every push to a branch other than `main` (for example `dev` or a feature branch):
 
-1. `quality-gate` installs dependencies (`npm ci`), lints (`npm run lint`), and builds (`npm run build`) the frontend, then the backend.
+1. `build-lint-check` installs dependencies (`npm ci`), lints (`npm run lint`), and builds (`npm run build`) the frontend, then the backend.
 2. `secret-scan` checks complete Git history with Gitleaks.
 
-Configure `quality-gate` and `secret-scan` as required branch-protection status checks so a push that fails either job is rejected.
+Configure `build-lint-check` and `secret-scan` as required branch-protection status checks so a push that fails either job is rejected.
 
 ## Pull request checks
 
