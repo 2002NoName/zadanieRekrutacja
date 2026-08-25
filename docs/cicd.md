@@ -6,11 +6,11 @@ Navigation: [README](../README.md) | [Stack](stack.md) | [Security](security.md)
 
 CI/CD is split into three independent workflows, each scoped to a single stage of the pipeline:
 
-| Workflow                                                            | Trigger                                                                            | Purpose                          |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------- |
-| [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                                  | Build, lint, and secret scanning |
+| Workflow                                                            | Trigger                                                                                            | Purpose                          |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                                                  | Build, lint, and secret scanning |
 | [`pr-checks.yml`](../.github/workflows/pr-checks.yml)               | Pull request targeting any branch (including `main`), merge queue, push to `main`, manual dispatch | Dependency audit and CodeQL      |
-| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                                    | Signed image archives            |
+| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                                                    | Signed image archives            |
 
 `main` only receives commits through a pull request from `dev`, which `pr-checks.yml` still gates. Direct pushes are excluded from `push-checks.yml` since `main` never receives them; the resulting push after merge is instead covered by `image-build-sign.yml`.
 
