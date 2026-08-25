@@ -13,7 +13,6 @@ permissions:
 jobs:
     dependency-audit:
         name: Dependency audit
-        if: github.event_name != 'push'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5

@@ -1,7 +1,9 @@
 name: Image Build and Sign
 
 on:
-    push:
+    workflow_run:
+        workflows: [PR Checks]
+        types: [completed]
         branches: [main]
     workflow_dispatch:
 
@@ -10,29 +12,32 @@ permissions:
 
 jobs:
     image-build-sign:
+        if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
         runs-on: ubuntu-latest
         permissions:
             contents: read
             id-token: write
         steps:
             - uses: actions/checkout@v5
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
             - uses: docker/setup-buildx-action@v3
             - uses: sigstore/cosign-installer@v3
             - uses: docker/build-push-action@v6
               with:
                   context: ./backend
-                  tags: crud-api:${{ github.sha }}
+                  tags: crud-api:${{ github.event.workflow_run.head_sha || github.sha }}
                   outputs: type=oci,dest=/tmp/crud-api.tar
             - uses: docker/build-push-action@v6
               with:
                   context: ./frontend
-                  tags: crud-frontend:${{ github.sha }}
+                  tags: crud-frontend:${{ github.event.workflow_run.head_sha || github.sha }}
                   outputs: type=oci,dest=/tmp/crud-frontend.tar
             - run: cosign sign-blob --yes --bundle /tmp/crud-api.bundle /tmp/crud-api.tar
             - run: cosign sign-blob --yes --bundle /tmp/crud-frontend.bundle /tmp/crud-frontend.tar
             - uses: actions/upload-artifact@v4
               with:
-                  name: signed-container-images-${{ github.sha }}
+                  name: signed-container-images-${{ github.event.workflow_run.head_sha || github.sha }}
                   path: |
                       /tmp/crud-api.tar
                       /tmp/crud-api.bundle
