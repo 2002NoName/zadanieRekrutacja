@@ -10,9 +10,9 @@ CI/CD is split into three independent workflows, each scoped to a single stage o
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------- |
 | [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                                                  | Build, lint, and secret scanning |
 | [`pr-checks.yml`](../.github/workflows/pr-checks.yml)               | Pull request targeting any branch (including `main`), merge queue, push to `main`, manual dispatch | Dependency audit and CodeQL      |
-| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                                                    | Signed image archives            |
+| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | `pr-checks.yml` completing successfully on `main`, manual dispatch                                 | Signed image archives            |
 
-`main` only receives commits through a pull request from `dev`, which `pr-checks.yml` still gates. Direct pushes are excluded from `push-checks.yml` since `main` never receives them; the resulting push after merge is instead covered by `image-build-sign.yml`.
+`main` only receives commits through a pull request from `dev`, which `pr-checks.yml` still gates. Direct pushes are excluded from `push-checks.yml` since `main` never receives them; the resulting push after merge instead triggers `pr-checks.yml`, and `image-build-sign.yml` only proceeds once that run succeeds.
 
 ## Push checks
 
@@ -27,16 +27,16 @@ Configure `build-lint-check` and `secret-scan` as required branch-protection sta
 
 `pr-checks.yml` runs on pull requests targeting any branch, including `main`, on merge queue groups, and on pushes to `main`:
 
-1. `dependency-audit` runs `npm audit --audit-level=high` for the frontend and backend, rejecting high or critical vulnerabilities. It is skipped on the push-to-`main` trigger, since that code already passed audit during its pull request.
+1. `dependency-audit` runs `npm audit --audit-level=high` for the frontend and backend, rejecting high or critical vulnerabilities.
 2. `codeql` runs JavaScript/TypeScript analysis with no build capture and uploads results to GitHub Code Scanning.
 
-The push-to-`main` trigger exists solely so CodeQL analyzes the default branch and populates the repository's Security tab; without it, GitHub only has pull request-scoped results.
+The push-to-`main` trigger both re-runs these gates on the merged code and lets CodeQL analyze the default branch to populate the repository's Security tab.
 
 Configure `dependency-audit` and `codeql` as required branch-protection status checks so a pull request cannot merge while either job fails.
 
 ## Image build and sign
 
-`image-build-sign.yml` runs on every push to `main`, which normally happens when a `dev` pull request is merged after passing `pr-checks.yml`.
+`image-build-sign.yml` listens for `pr-checks.yml` to complete on `main` via `workflow_run`, and only proceeds when that run concluded successfully. This chains the pipeline on a push to `main`: `dependency-audit` and `codeql` must pass before an image is built and signed.
 
 The job creates OCI archives for the API and frontend images tagged with the triggering commit SHA. It does not publish images to a registry. Cosign signs each archive with keyless Sigstore signing and writes a bundle alongside it. The archives and bundles are uploaded as a workflow artifact for 14 days.
 
