@@ -20,7 +20,7 @@ The application manages products with the following attributes:
 - price
 - stock level
 
-The API initializes 2,000 products in memory when the process starts. The web client provides server-side search and pagination, as well as create, edit, and delete workflows.
+The API initializes 10,000 products in memory when the process starts. The web client provides server-side search and pagination, as well as create, edit, and delete workflows.
 
 Data is process-local and is recreated after an API restart.
 

@@ -9,7 +9,7 @@ export type Product = ProductInput & {
 export const products = new Map<string, Product>();
 let productSequence = 0;
 
-for (let index = 1; index <= 2000; index += 1) {
+for (let index = 1; index <= 10000; index += 1) {
 	const now = new Date().toISOString();
 	products.set(String(index), {
 		id: String(index),

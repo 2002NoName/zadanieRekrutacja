@@ -4,7 +4,7 @@ Navigation: [README](../README.md) | [Stack](stack.md) | [Security](security.md)
 
 ## Storage
 
-The API uses a process-local `Map<string, Product>` keyed by `id`. The catalog is generated during startup and contains 2,000 records. There is no external database connection, schema migration, or persistence layer.
+The API uses a process-local `Map<string, Product>` keyed by `id`. The catalog is generated during startup and contains 10,000 records. There is no external database connection, schema migration, or persistence layer.
 
 ## Product
 

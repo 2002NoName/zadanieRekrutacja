@@ -25,3 +25,8 @@ setup.template.overwrite: true
 setup.template.priority: 500
 setup.template.settings:
     index.lifecycle.name: crud-api-retention
+setup.template.append_fields:
+    - name: error.response.system_message
+      type: keyword
+    - name: error.response.user_message
+      type: keyword
