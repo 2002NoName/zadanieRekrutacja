@@ -61,11 +61,9 @@ The REST API base URL is `http://localhost:4000`. The full endpoint contract, va
 
 ## CI/CD
 
-The workflow in [.github/workflows/CI.yml](.github/workflows/CI.yml) runs for pull requests to `dev` and `main`, pushes to `dev` and `main`, merge queue groups, and manual dispatches.
+CI/CD runs as three focused workflows. [push-checks.yml](.github/workflows/push-checks.yml) builds, lints, and scans for secrets on every push to a branch other than `main`. [pr-checks.yml](.github/workflows/pr-checks.yml) runs dependency auditing and CodeQL analysis on pull requests targeting any branch other than `main` and on merge queue groups. [image-build-sign.yml](.github/workflows/image-build-sign.yml) builds and signs container image archives on every push to `main`.
 
-Pushes to `dev` run build and lint for both applications. Pull requests to `dev` or `main`, merge queue groups, pushes to `main`, and manual runs additionally execute dependency auditing, Gitleaks, and CodeQL analysis. Container image creation is allowed only after all required gates pass on a push to `main`.
-
-On a push to `main`, signed OCI image archives are attached to the workflow run; they are not published to a registry. See [docs/cicd.md](docs/cicd.md) for the build and signing process.
+Signed OCI image archives are attached to the `image-build-sign` workflow run; they are not published to a registry. See [docs/cicd.md](docs/cicd.md) for the full pipeline and required branch-protection status checks.
 
 ## Security
 

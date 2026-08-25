@@ -2,32 +2,42 @@
 
 Navigation: [README](../README.md) | [Stack](stack.md) | [Security](security.md) | [API](api.md) | [Data Model](database.md) | [Observability](observability.md) | [Operations](manual.md)
 
-## Triggers
+## Overview
 
-The workflow in `.github/workflows/CI.yml` runs on pushes to `dev` and `main`, pull requests targeting `dev` or `main`, GitHub Merge Queue `merge_group` events, and manual dispatches.
+CI/CD is split into three independent workflows, each scoped to a single stage of the pipeline:
 
-An ordinary push to `dev` runs the fast feedback path: build and lint for the frontend and backend. A pull request to `dev` or `main`, a merge queue group, a push to `main`, or a manual dispatch runs the complete quality and security path.
+| Workflow                                                            | Trigger                                                                       | Purpose                          |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------- |
+| [`push-checks.yml`](../.github/workflows/push-checks.yml)           | Push to any branch except `main`, manual dispatch                             | Build, lint, and secret scanning |
+| [`pr-checks.yml`](../.github/workflows/pr-checks.yml)               | Pull request targeting any branch except `main`, merge queue, manual dispatch | Dependency audit and CodeQL      |
+| [`image-build-sign.yml`](../.github/workflows/image-build-sign.yml) | Push to `main`, manual dispatch                                               | Signed image archives            |
 
-## Quality gate
+`main` only receives already-checked commits through a pull request merged from `dev`, so it is intentionally excluded from `push-checks.yml` and `pr-checks.yml` and is instead covered by `image-build-sign.yml`.
 
-The `quality-gate` job runs the following checks for the frontend and then the backend on every workflow trigger:
+## Push checks
 
-1. `npm ci` installs dependencies from each lockfile.
-2. `npm run lint` applies repository lint rules.
-3. `npm run build` compiles production artifacts and TypeScript.
+`push-checks.yml` runs on every push to a branch other than `main` (for example `dev` or a feature branch):
 
-`dependency-audit` runs only for pull requests, merge queue groups, `main`, and manual runs. It executes `npm audit --audit-level=high` for both applications and rejects high or critical dependency vulnerabilities.
+1. `quality-gate` installs dependencies (`npm ci`), lints (`npm run lint`), and builds (`npm run build`) the frontend, then the backend.
+2. `secret-scan` checks complete Git history with Gitleaks.
 
-Any failed step fails its job. Configure `quality-gate`, `dependency-audit`, `secret-scan`, and `codeql` as required branch-protection status checks for `main`.
+Configure `quality-gate` and `secret-scan` as required branch-protection status checks so a push that fails either job is rejected.
 
-## Security analysis
+## Pull request checks
 
-`secret-scan` checks complete Git history with Gitleaks on integration events. `codeql` runs JavaScript/TypeScript analysis with no build capture on integration events and uploads results to GitHub Code Scanning.
+`pr-checks.yml` runs on pull requests targeting any branch other than `main`, and on merge queue groups:
 
-## Image delivery
+1. `dependency-audit` runs `npm audit --audit-level=high` for the frontend and backend, rejecting high or critical vulnerabilities.
+2. `codeql` runs JavaScript/TypeScript analysis with no build capture and uploads results to GitHub Code Scanning.
 
-`image-build-sign` runs only on a push to `main` and requires successful `quality-gate`, `dependency-audit`, `secret-scan`, and `codeql` jobs.
+Configure `dependency-audit` and `codeql` as required branch-protection status checks so a pull request cannot merge while either job fails.
 
-The job creates OCI archives for the API and frontend images tagged with the commit SHA. It does not publish images to a registry. Cosign signs each archive with keyless Sigstore signing and writes a bundle alongside it. The archives and bundles are uploaded as a workflow artifact for 14 days.
+## Image build and sign
+
+`image-build-sign.yml` runs on every push to `main`, which normally happens when a `dev` pull request is merged after passing `pr-checks.yml`.
+
+The job creates OCI archives for the API and frontend images tagged with the triggering commit SHA. It does not publish images to a registry. Cosign signs each archive with keyless Sigstore signing and writes a bundle alongside it. The archives and bundles are uploaded as a workflow artifact for 14 days.
 
 GitHub Actions obtains a short-lived OpenID Connect identity through the `id-token: write` permission; no private signing key is stored in repository secrets. A later deployment process can validate an archive with its Cosign bundle before loading or publishing it.
+
+It can also be triggered manually with `workflow_dispatch`, in which case it builds from the ref that started the run.
